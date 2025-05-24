@@ -31,27 +31,38 @@ bool Cycle::has_restarted() {
     return result;
 }
 
+bool Cycle::has_reached_repetitions_limit() {
+    bool result = reached_repetitions_limit;
+    reached_repetitions_limit = false;
+    return result;
+}
+
 void Cycle::set_repetitions_limit(unsigned long repetitions_limit) {
     this->repetitions_limit = repetitions_limit;
 }
 
 void Cycle::set_phases(Phase phases[], int phase_count) {
-    this->phases = phases;
+    delete[] this->phases;
+    this->phases = new Phase[phase_count];
+    for (int i = 0; i < phase_count; i++) {
+        this->phases[i] = phases[i];
+    }
+
     this->phase_count = phase_count;
+    phase_index = 0;
 }
 
 void Cycle::enable() {
     enabled = true;
     phase_changed = false;
     restarted = false;
+    reached_repetitions_limit = false;
     phase_index = 0;
     last_time_ms = millis();
 }
 
 void Cycle::disable() {
     enabled = false;
-    phase_changed = false;
-    restarted = false;
     phase_index = 0;
 }
 
@@ -64,19 +75,23 @@ void Cycle::update() {
     unsigned long now = millis();
     unsigned long elapsed = now - last_time_ms;
 
+    // next phase
     if (elapsed >= phases[phase_index].duration_ms) {
         phase_changed = true;
         phase_index++;
         last_time_ms = now;
     }
 
+    // restart cycle
     if (phase_index >= phase_count) {
         restarted = true;
         phase_index = 0;
         repetitions_count++;
+    }
 
-        if (repetitions_limit > 0 && repetitions_count >= repetitions_limit) {
-            disable();
-        }
+    // reached repetitions limit
+    if (repetitions_limit > 0 && repetitions_count >= repetitions_limit) {
+        reached_repetitions_limit = true;
+        disable();
     }
 }

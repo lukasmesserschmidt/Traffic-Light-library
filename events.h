@@ -1,14 +1,15 @@
 #ifndef EVENTS_H
 #define EVENTS_H
 
-#define EVENT_LIST                      \
-    EVENT(RED_LIGHT_DEFECT)             \
-    EVENT(YELLOW_LIGHT_DEFECT)          \
-    EVENT(GREEN_LIGHT_DEFECT)           \
-    EVENT(CYCLE_PHASE_CHANGED)          \
-    EVENT(CYCLE_RESTARTED)              \
-    EVENT(ACTIVITY_CYCLE_STATE_CHANGED) \
-    EVENT(ACTIVITY_CYCLE_TO_ACTIVE)     \
+#define EVENT_LIST                         \
+    EVENT(RED_LIGHT_DEFECT)                \
+    EVENT(YELLOW_LIGHT_DEFECT)             \
+    EVENT(GREEN_LIGHT_DEFECT)              \
+    EVENT(CYCLE_PHASE_CHANGED)             \
+    EVENT(CYCLE_RESTARTED)                 \
+    EVENT(CYCLE_REACHED_REPETITIONS_LIMIT) \
+    EVENT(ACTIVITY_CYCLE_STATE_CHANGED)    \
+    EVENT(ACTIVITY_CYCLE_TO_ACTIVE)        \
     EVENT(ACTIVITY_CYCLE_TO_INACTIVE)
 
 enum EventName {

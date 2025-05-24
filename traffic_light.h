@@ -9,6 +9,7 @@ class TrafficLight {
    private:
     int light_pins[3];
     int test_pins[3];
+    bool intact_lights[3];
     bool pattern[3];
     Cycle cycle;
     ActivityCycle activity_cycle;

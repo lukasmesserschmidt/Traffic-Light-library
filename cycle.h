@@ -15,6 +15,7 @@ class Cycle {
 
     bool phase_changed;
     bool restarted;
+    bool reached_repetitions_limit;
 
    public:
     Cycle();
@@ -23,6 +24,7 @@ class Cycle {
     Phase* get_current_phase();
     bool has_phase_changed();
     bool has_restarted();
+    bool has_reached_repetitions_limit();
 
     void set_repetitions_limit(unsigned long repetitions_limit);
     void set_phases(Phase phases[], int phase_count);

@@ -2,13 +2,14 @@
 
 #include <Arduino.h>
 
-#define INVALID_PIN -1
+#define INVALID_PIN 0
 #define DEFECT_THRESHOLD 1000
 
 // constructor
 TrafficLight::TrafficLight(int red_pin, int yellow_pin, int green_pin)
     : light_pins{red_pin, yellow_pin, green_pin},
       test_pins{INVALID_PIN, INVALID_PIN, INVALID_PIN},
+      intact_lights{true, true, true},
       pattern{false, false, false},
       cycle(),
       activity_cycle(),
@@ -96,10 +97,11 @@ void TrafficLight::update() {
         // enable/disable cycle and emit events
         if (activity_cycle.has_state_changed()) {
             if (activity_cycle.get_state() == ActivityCycleState::ACTIVE) {
-                cycle.enable();
+                enable_cycle();
                 event_manager.emit(ACTIVITY_CYCLE_TO_ACTIVE);
             } else if (activity_cycle.get_state() == ActivityCycleState::INACTIVE) {
-                cycle.disable();
+                disable_cycle();
+                set_pattern(false, false, false);
                 event_manager.emit(ACTIVITY_CYCLE_TO_INACTIVE);
             }
 
@@ -123,6 +125,9 @@ void TrafficLight::update() {
         if (cycle.has_restarted()) {
             event_manager.emit(CYCLE_RESTARTED);
         }
+        if (cycle.has_reached_repetitions_limit()) {
+            event_manager.emit(CYCLE_REACHED_REPETITIONS_LIMIT);
+        }
     }
 
     // power lights
@@ -131,6 +136,7 @@ void TrafficLight::update() {
     }
 
     // test pins
+    test_light_pins();
 }
 
 void TrafficLight::test_light_pins() {
@@ -142,6 +148,9 @@ void TrafficLight::test_light_pins() {
 
     for (int i = 0; i < 3; i++) {
         if (test_pins[i] != INVALID_PIN && analogRead(test_pins[i]) > DEFECT_THRESHOLD) {
+            if (!intact_lights[i]) continue;
+
+            intact_lights[i] = false;
             event_manager.emit(event_names[i]);
         }
     }

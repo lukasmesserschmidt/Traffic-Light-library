@@ -9,6 +9,8 @@ void EventManager::disconnect(EventName name) {
 }
 
 void EventManager::emit(EventName name) {
-    if (events[static_cast<int>(name)].callback == nullptr) return;
-    events[static_cast<int>(name)].callback();
+    void (*callback)() = events[static_cast<int>(name)].callback;
+    if (callback != nullptr) {
+        callback();
+    }
 }
