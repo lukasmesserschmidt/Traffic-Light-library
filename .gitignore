@@ -1,0 +1,6 @@
+.vscode/
+
+arduino_mock.h
+arduino_mock.cpp
+main.cpp
+main.exe
