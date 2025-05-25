@@ -19,6 +19,10 @@ Phase* Cycle::get_current_phase() {
     return &phases[phase_index];
 }
 
+int Cycle::get_phase_count() {
+    return phase_count;
+}
+
 bool Cycle::has_phase_changed() {
     bool result = phase_changed;
     phase_changed = false;
@@ -69,8 +73,6 @@ void Cycle::disable() {
 void Cycle::update() {
     phase_changed = false;
     restarted = false;
-
-    if (!enabled) return;
 
     unsigned long now = millis();
     unsigned long elapsed = now - last_time_ms;

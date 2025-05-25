@@ -1,0 +1,36 @@
+###########################################
+# Syntax Coloring Map For Traffic Light library
+###########################################
+
+###########################################
+# Datatypes (KEYWORD1)
+###########################################
+
+TrafficLight	KEYWORD1
+EventName	KEYWORD1
+Phase	KEYWORD1
+
+###########################################
+# Methods (KEYWORD2)
+###########################################
+
+is_cycle_enabled	KEYWORD2
+is_activity_cycle_enabled	KEYWORD2
+get_current_pattern	KEYWORD2
+
+set_test_pin	KEYWORD2
+set_test_pins	KEYWORD2
+set_pattern	KEYWORD2
+set_cycle_repetitions_limit	KEYWORD2
+set_cycle_phases	KEYWORD2
+set_activity_cycle_times	KEYWORD2
+
+enable_cycle	KEYWORD2
+disable_cycle	KEYWORD2
+enable_activity_cycle	KEYWORD2
+disable_activity_cycle	KEYWORD2
+
+register_event	KEYWORD2
+unregister_event	KEYWORD2
+
+update	KEYWORD2

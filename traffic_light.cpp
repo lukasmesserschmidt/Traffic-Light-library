@@ -69,6 +69,7 @@ void TrafficLight::enable_cycle() {
 
 void TrafficLight::disable_cycle() {
     cycle.disable();
+    set_pattern(false, false, false);
 }
 
 void TrafficLight::enable_activity_cycle() {
@@ -98,18 +99,17 @@ void TrafficLight::update() {
         if (activity_cycle.has_state_changed()) {
             if (activity_cycle.get_state() == ActivityCycleState::ACTIVE) {
                 enable_cycle();
-                event_manager.emit(ACTIVITY_CYCLE_TO_ACTIVE);
+                event_manager.emit(EventName::ACTIVITY_CYCLE_TO_ACTIVE);
             } else if (activity_cycle.get_state() == ActivityCycleState::INACTIVE) {
                 disable_cycle();
-                set_pattern(false, false, false);
-                event_manager.emit(ACTIVITY_CYCLE_TO_INACTIVE);
+                event_manager.emit(EventName::ACTIVITY_CYCLE_TO_INACTIVE);
             }
 
-            event_manager.emit(ACTIVITY_CYCLE_STATE_CHANGED);
+            event_manager.emit(EventName::ACTIVITY_CYCLE_STATE_CHANGED);
         }
     }
 
-    if (cycle.is_enabled()) {
+    if (cycle.is_enabled() && cycle.get_phase_count() > 0) {
         // update cycle
         cycle.update();
 
@@ -120,13 +120,13 @@ void TrafficLight::update() {
 
         // emit events
         if (cycle.has_phase_changed()) {
-            event_manager.emit(CYCLE_PHASE_CHANGED);
+            event_manager.emit(EventName::CYCLE_PHASE_CHANGED);
         }
         if (cycle.has_restarted()) {
-            event_manager.emit(CYCLE_RESTARTED);
+            event_manager.emit(EventName::CYCLE_RESTARTED);
         }
         if (cycle.has_reached_repetitions_limit()) {
-            event_manager.emit(CYCLE_REACHED_REPETITIONS_LIMIT);
+            event_manager.emit(EventName::CYCLE_REACHED_REPETITIONS_LIMIT);
         }
     }
 
@@ -141,9 +141,9 @@ void TrafficLight::update() {
 
 void TrafficLight::test_light_pins() {
     EventName event_names[] = {
-        RED_LIGHT_DEFECT,
-        YELLOW_LIGHT_DEFECT,
-        GREEN_LIGHT_DEFECT,
+        EventName::RED_LIGHT_DEFECT,
+        EventName::YELLOW_LIGHT_DEFECT,
+        EventName::GREEN_LIGHT_DEFECT,
     };
 
     for (int i = 0; i < 3; i++) {

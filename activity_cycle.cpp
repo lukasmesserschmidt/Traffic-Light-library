@@ -45,8 +45,6 @@ void ActivityCycle::disable() {
 void ActivityCycle::update() {
     state_changed = false;
 
-    if (!enabled) return;
-
     unsigned long now = millis();
     unsigned long elapsed = now - last_time_ms;
 

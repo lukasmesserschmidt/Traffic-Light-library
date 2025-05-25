@@ -26,21 +26,21 @@ struct Event {
 
 class EventManager {
    public:
-    /** Connects a callback function to an event
-     *
+    /**
+     * Connects a callback function to an event
      * @param name The name of the event
      * @param callback The callback
      */
     void connect(EventName name, void (*callback)());
 
-    /** Disconnects a callback function from an event
-     *
+    /**
+     * Disconnects a callback function from an event
      * @param name The name of the event
      */
     void disconnect(EventName name);
 
-    /** Triggers the callback function of an event
-     *
+    /**
+     * Triggers the callback function of an event
      * @param name The name of the event
      */
     void emit(EventName name);
