@@ -12,7 +12,7 @@
     EVENT(ACTIVITY_CYCLE_TO_ACTIVE)        \
     EVENT(ACTIVITY_CYCLE_TO_INACTIVE)
 
-enum EventName {
+enum class EventName {
 #define EVENT(name) name,
     EVENT_LIST
 #undef EVENT

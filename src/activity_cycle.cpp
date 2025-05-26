@@ -4,7 +4,7 @@
 
 ActivityCycle::ActivityCycle()
     : enabled(false),
-      state(ActivityCycleState::INACTIVE),
+      state(ActivityCycleState::ACTIVE),
       state_changed(false),
       active_time_ms(0),
       inactive_time_ms(0),
@@ -32,29 +32,35 @@ void ActivityCycle::set_times(unsigned long active_time_ms, unsigned long inacti
 void ActivityCycle::enable() {
     enabled = true;
     state_changed = false;
-    state = ActivityCycleState::INACTIVE;
+    state = ActivityCycleState::ACTIVE;
     last_time_ms = millis();
 }
 
 void ActivityCycle::disable() {
     enabled = false;
-    state_changed = false;
-    state = ActivityCycleState::INACTIVE;
+    state = ActivityCycleState::ACTIVE;
 }
 
 void ActivityCycle::update() {
     state_changed = false;
 
+    if (!enabled) return;
+
     unsigned long now = millis();
     unsigned long elapsed = now - last_time_ms;
 
+    ActivityCycleState previous_state = state;
+
+    // update state
     if (state == ActivityCycleState::INACTIVE && elapsed >= inactive_time_ms) {
-        state_changed = true;
         state = ActivityCycleState::ACTIVE;
-        last_time_ms = now;
     } else if (state == ActivityCycleState::ACTIVE && elapsed >= active_time_ms) {
-        state_changed = true;
         state = ActivityCycleState::INACTIVE;
+    }
+
+    // state has changed
+    if (previous_state != state) {
+        state_changed = true;
         last_time_ms = now;
     }
 }

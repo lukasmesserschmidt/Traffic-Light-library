@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-#define INVALID_PIN 0
+#define INVALID_PIN -1
 #define DEFECT_THRESHOLD 1000
 
 // constructor
@@ -65,6 +65,7 @@ void TrafficLight::set_activity_cycle_times(unsigned long active_time_ms, unsign
 // controls
 void TrafficLight::enable_cycle() {
     cycle.enable();
+    on_cycle_phase_changed();
 }
 
 void TrafficLight::disable_cycle() {
@@ -91,43 +92,26 @@ void TrafficLight::unregister_event(EventName name) {
 
 // update
 void TrafficLight::update() {
-    if (activity_cycle.is_enabled()) {
-        // update activity cycle
-        activity_cycle.update();
+    // update activity cycle
+    activity_cycle.update();
 
-        // enable/disable cycle and emit events
-        if (activity_cycle.has_state_changed()) {
-            if (activity_cycle.get_state() == ActivityCycleState::ACTIVE) {
-                enable_cycle();
-                event_manager.emit(EventName::ACTIVITY_CYCLE_TO_ACTIVE);
-            } else if (activity_cycle.get_state() == ActivityCycleState::INACTIVE) {
-                disable_cycle();
-                event_manager.emit(EventName::ACTIVITY_CYCLE_TO_INACTIVE);
-            }
-
-            event_manager.emit(EventName::ACTIVITY_CYCLE_STATE_CHANGED);
-        }
+    // enable/disable cycle and emit activity cycle events
+    if (activity_cycle.has_state_changed()) {
+        on_activity_cycle_state_changed();
     }
 
-    if (cycle.is_enabled() && cycle.get_phase_count() > 0) {
-        // update cycle
-        cycle.update();
+    // update cycle
+    cycle.update();
 
-        // update pattern
-        for (int i = 0; i < 3; i++) {
-            pattern[i] = cycle.get_current_phase()->pattern[i];
-        }
-
-        // emit events
-        if (cycle.has_phase_changed()) {
-            event_manager.emit(EventName::CYCLE_PHASE_CHANGED);
-        }
-        if (cycle.has_restarted()) {
-            event_manager.emit(EventName::CYCLE_RESTARTED);
-        }
-        if (cycle.has_reached_repetitions_limit()) {
-            event_manager.emit(EventName::CYCLE_REACHED_REPETITIONS_LIMIT);
-        }
+    // emit cycle events
+    if (cycle.has_phase_changed()) {
+        on_cycle_phase_changed();
+    }
+    if (cycle.has_restarted()) {
+        on_cycle_restarted();
+    }
+    if (cycle.has_reached_repetitions_limit()) {
+        on_cycle_reached_repetitions_limit();
     }
 
     // power lights
@@ -136,16 +120,50 @@ void TrafficLight::update() {
     }
 
     // test pins
-    test_light_pins();
+    test_for_defekt_lights();
 }
 
-void TrafficLight::test_light_pins() {
+void TrafficLight::on_activity_cycle_state_changed() {
+    ActivityCycleState state = activity_cycle.get_state();
+
+    // enable/disable cycle and emit events
+    if (state == ActivityCycleState::ACTIVE) {
+        enable_cycle();
+        event_manager.emit(EventName::ACTIVITY_CYCLE_TO_ACTIVE);
+    } else if (state == ActivityCycleState::INACTIVE) {
+        disable_cycle();
+        event_manager.emit(EventName::ACTIVITY_CYCLE_TO_INACTIVE);
+    }
+
+    event_manager.emit(EventName::ACTIVITY_CYCLE_STATE_CHANGED);
+}
+
+void TrafficLight::on_cycle_phase_changed() {
+    Phase* phase = cycle.get_current_phase();
+
+    if (phase == nullptr) return;
+
+    set_pattern(phase->pattern[0], phase->pattern[1], phase->pattern[2]);
+
+    event_manager.emit(EventName::CYCLE_PHASE_CHANGED);
+}
+
+void TrafficLight::on_cycle_restarted() {
+    event_manager.emit(EventName::CYCLE_RESTARTED);
+}
+
+void TrafficLight::on_cycle_reached_repetitions_limit() {
+    event_manager.emit(EventName::CYCLE_REACHED_REPETITIONS_LIMIT);
+}
+
+void TrafficLight::test_for_defekt_lights() {
     EventName event_names[] = {
         EventName::RED_LIGHT_DEFECT,
         EventName::YELLOW_LIGHT_DEFECT,
         EventName::GREEN_LIGHT_DEFECT,
     };
 
+    // test for defekt lights and emit events
     for (int i = 0; i < 3; i++) {
         if (test_pins[i] != INVALID_PIN && analogRead(test_pins[i]) > DEFECT_THRESHOLD) {
             if (!intact_lights[i]) continue;

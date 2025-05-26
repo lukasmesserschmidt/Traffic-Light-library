@@ -16,10 +16,30 @@ class TrafficLight {
     EventManager event_manager;
 
     /**
+     * Updates the activity cycle state.
+     */
+    void on_activity_cycle_state_changed();
+
+    /**
+     * Updates the pattern based on the current phase in the cycle.
+     */
+    void on_cycle_phase_changed();
+
+    /**
+     * Emits the CYCLE_PHASE_CHANGED event.
+     */
+    void on_cycle_restarted();
+
+    /**
+     * Emits the CYCLE_REACHED_REPETITIONS_LIMIT event.
+     */
+    void on_cycle_reached_repetitions_limit();
+
+    /**
      * Test the light pins by checking their analog readings.
      * Updates the intact_lights array based on the readings.
      */
-    void test_light_pins();
+    void test_for_defekt_lights();
 
    public:
     /**

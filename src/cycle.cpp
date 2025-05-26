@@ -16,6 +16,7 @@ bool Cycle::is_enabled() {
 }
 
 Phase* Cycle::get_current_phase() {
+    if (!enabled || phase_index >= phase_count) return nullptr;
     return &phases[phase_index];
 }
 
@@ -61,6 +62,7 @@ void Cycle::enable() {
     phase_changed = false;
     restarted = false;
     reached_repetitions_limit = false;
+    repetitions_count = 0;
     phase_index = 0;
     last_time_ms = millis();
 }
@@ -73,16 +75,22 @@ void Cycle::disable() {
 void Cycle::update() {
     phase_changed = false;
     restarted = false;
+    reached_repetitions_limit = false;
+
+    if (!enabled || phases == nullptr || phase_count == 0) return;
 
     unsigned long now = millis();
     unsigned long elapsed = now - last_time_ms;
 
-    // next phase
-    if (elapsed >= phases[phase_index].duration_ms) {
-        phase_changed = true;
-        phase_index++;
-        last_time_ms = now;
+    // current phase
+    if (elapsed < phases[phase_index].duration_ms) {
+        return;
     }
+
+    // next phase
+    phase_changed = true;
+    phase_index++;
+    last_time_ms = now;
 
     // restart cycle
     if (phase_index >= phase_count) {
