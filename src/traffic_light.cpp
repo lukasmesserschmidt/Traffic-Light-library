@@ -65,7 +65,10 @@ void TrafficLight::set_activity_cycle_times(unsigned long active_time_ms, unsign
 // controls
 void TrafficLight::enable_cycle() {
     cycle.enable();
-    on_cycle_phase_changed();
+    Phase* phase = cycle.get_current_phase();
+    if (phase != nullptr) {
+        set_pattern(phase->pattern[0], phase->pattern[1], phase->pattern[2]);
+    }
 }
 
 void TrafficLight::disable_cycle() {

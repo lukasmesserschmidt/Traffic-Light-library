@@ -71,12 +71,12 @@ class TrafficLight {
     /**
      * Sets the test pin for a specific light.
      * @param index The index of the light (0: red, 1: yellow, 2: green).
-     * @param pin The pin connected to the light.
+     * @param pin The pin connected to the light, -1 to disable.
      */
     void set_test_pin(int index, int pin);
 
     /**
-     * Sets the test pins for all lights.
+     * Sets the test pins for all lights, -1 to disable.
      * @param red_pin The pin connected to the red light.
      * @param yellow_pin The pin connected to the yellow light.
      * @param green_pin The pin connected to the green light.
