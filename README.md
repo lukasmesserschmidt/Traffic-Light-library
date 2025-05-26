@@ -46,7 +46,6 @@ Define an array of `Phase` structs, where each phase specifies a light pattern a
 
 ```cpp
 #include <TrafficLight.h>
-#include <Phase.h> // Include Phase definition
 
 // Define phases
 Phase phases[] = {
@@ -76,7 +75,6 @@ Set the active and inactive durations for the `ActivityCycle`. When enabled, the
 
 ```cpp
 #include <TrafficLight.h>
-#include <Phase.h>
 
 Phase phases[] = {
   {{true, false, false}, 3000},
@@ -104,8 +102,6 @@ Register callback functions to respond to various events, such as a phase change
 
 ```cpp
 #include <TrafficLight.h>
-#include <Phase.h>
-#include <Events.h> // Include EventName definitions
 
 TrafficLight trafficLight(13, 12, 11);
 
@@ -148,7 +144,6 @@ You can set a limit on how many times the traffic light cycle will repeat.
 
 ```cpp
 #include <TrafficLight.h>
-#include <Phase.h>
 
 TrafficLight trafficLight(13, 12, 11);
 
