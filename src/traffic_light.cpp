@@ -13,7 +13,8 @@ TrafficLight::TrafficLight(int red_pin, int yellow_pin, int green_pin)
       pattern{false, false, false},
       cycle(),
       activity_cycle(),
-      event_manager() {
+      event_manager(),
+      auto_lights_off(true) {
     pinMode(red_pin, OUTPUT);
     pinMode(yellow_pin, OUTPUT);
     pinMode(green_pin, OUTPUT);
@@ -28,7 +29,7 @@ bool TrafficLight::is_activity_cycle_enabled() {
     return activity_cycle.is_enabled();
 }
 
-bool* TrafficLight::get_current_pattern() {
+bool* TrafficLight::get_pattern() {
     return pattern;
 }
 
@@ -65,7 +66,7 @@ void TrafficLight::set_activity_cycle_times(unsigned long active_time_ms, unsign
 // controls
 void TrafficLight::enable_cycle() {
     cycle.enable();
-    Phase* phase = cycle.get_current_phase();
+    Phase* phase = cycle.get_phase();
     if (phase != nullptr) {
         set_pattern(phase->pattern[0], phase->pattern[1], phase->pattern[2]);
     }
@@ -73,7 +74,9 @@ void TrafficLight::enable_cycle() {
 
 void TrafficLight::disable_cycle() {
     cycle.disable();
-    set_pattern(false, false, false);
+    if (auto_lights_off) {
+        set_pattern(false, false, false);
+    }
 }
 
 void TrafficLight::enable_activity_cycle() {
@@ -110,8 +113,8 @@ void TrafficLight::update() {
     if (cycle.has_phase_changed()) {
         on_cycle_phase_changed();
     }
-    if (cycle.has_restarted()) {
-        on_cycle_restarted();
+    if (cycle.has_finished()) {
+        on_cycle_finished();
     }
     if (cycle.has_reached_repetitions_limit()) {
         on_cycle_reached_repetitions_limit();
@@ -142,7 +145,7 @@ void TrafficLight::on_activity_cycle_state_changed() {
 }
 
 void TrafficLight::on_cycle_phase_changed() {
-    Phase* phase = cycle.get_current_phase();
+    Phase* phase = cycle.get_phase();
 
     if (phase == nullptr) return;
 
@@ -151,11 +154,14 @@ void TrafficLight::on_cycle_phase_changed() {
     event_manager.emit(EventName::CYCLE_PHASE_CHANGED);
 }
 
-void TrafficLight::on_cycle_restarted() {
-    event_manager.emit(EventName::CYCLE_RESTARTED);
+void TrafficLight::on_cycle_finished() {
+    event_manager.emit(EventName::CYCLE_FINISHED);
 }
 
 void TrafficLight::on_cycle_reached_repetitions_limit() {
+    if (auto_lights_off) {
+        set_pattern(false, false, false);
+    }
     event_manager.emit(EventName::CYCLE_REACHED_REPETITIONS_LIMIT);
 }
 

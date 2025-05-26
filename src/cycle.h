@@ -14,7 +14,7 @@ class Cycle {
     unsigned long last_time_ms;
 
     bool phase_changed;
-    bool restarted;
+    bool finished;
     bool reached_repetitions_limit;
 
    public:
@@ -30,7 +30,7 @@ class Cycle {
      * Gets the current phase.
      * @return Pointer to the current phase.
      */
-    Phase* get_current_phase();
+    Phase* get_phase();
 
     /**
      * Gets the number of phases in the cycle.
@@ -45,10 +45,10 @@ class Cycle {
     bool has_phase_changed();
 
     /**
-     * Checks if the cycle has restarted.
-     * @return True if the cycle has restarted, false otherwise.
+     * Checks if the cycle has finished.
+     * @return True if the cycle has finished, false otherwise.
      */
-    bool has_restarted();
+    bool has_finished();
 
     /**
      * Checks if the cycle has reached its repetitions limit.
@@ -71,6 +71,8 @@ class Cycle {
 
     /**
      * Enables the cycle.
+     * Repeats the cycle based on the repetitions limit.
+     * Resets the repetitions count.
      */
     void enable();
 

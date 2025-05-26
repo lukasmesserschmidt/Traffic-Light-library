@@ -15,6 +15,8 @@ class TrafficLight {
     ActivityCycle activity_cycle;
     EventManager event_manager;
 
+    bool auto_lights_off = false;
+
     /**
      * Updates the activity cycle state.
      */
@@ -28,7 +30,7 @@ class TrafficLight {
     /**
      * Emits the CYCLE_PHASE_CHANGED event.
      */
-    void on_cycle_restarted();
+    void on_cycle_finished();
 
     /**
      * Emits the CYCLE_REACHED_REPETITIONS_LIMIT event.
@@ -66,7 +68,7 @@ class TrafficLight {
      * Gets the current pattern of the traffic light.
      * @return The current pattern represented as a boolean array.
      */
-    bool* get_current_pattern();
+    bool* get_pattern();
 
     /**
      * Sets the test pin for a specific light.
@@ -110,6 +112,13 @@ class TrafficLight {
      * @param inactive_time_ms The time in milliseconds for the inactive state.
      */
     void set_activity_cycle_times(unsigned long active_time_ms, unsigned long inactive_time_ms);
+
+    /**
+     * Sets the state of the auto lights off feature.
+     * When enabled, the traffic light will automatically turn off the lights when the activity cycle changes to inactive, the cycle reaches its repetitions limit or the cycle is disabled.
+     * @param enabled True to enable auto lights off, false to disable.
+     */
+    void set_auto_lights_off(bool enabled);
 
     /**
      * Enables the cycle.

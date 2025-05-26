@@ -8,7 +8,7 @@ A minimal Arduino library designed for simulating a standard three-light traffic
 - **Configurable Cycles:** Define sequences of light patterns (phases) with specified durations to create automated traffic light behaviors.
 - **Activity Cycles:** Implement an overarching active/inactive state for the traffic light, allowing it to operate or remain off for defined periods.
 - **Defect Detection:** Monitor light functionality using analog test pins to detect and report light defects.
-- **Event System:** Utilize a comprehensive event manager to connect callback functions to various traffic light occurrences, such as phase changes, cycle restarts, or light defects.
+- **Event System:** Utilize a comprehensive event manager to connect callback functions to various traffic light occurrences, such as phase changes, cycle finishes, or light defects.
 
 ## Installation
 
@@ -101,6 +101,8 @@ void loop() {
 ### Handling Events
 
 Register callback functions to respond to various events, such as a phase change in the cycle or a light defect.
+
+> **Note:** Each event can be associated with only one callback function. If you register another callback for the same event, it will overwrite the previously registered one.
 
 ```cpp
 #include <TrafficLight.h>
