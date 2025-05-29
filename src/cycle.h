@@ -2,89 +2,97 @@
 #define CYCLE_H
 
 #include "phase.h"
+#include <stdint.h>
 
 class Cycle {
-   private:
-    bool enabled;
-    Phase* phases;
-    int phase_count;
-    int phase_index;
-    unsigned long repetitions_limit;
-    unsigned long repetitions_count;
-    unsigned long last_time_ms;
+private:
+  // Bit positions for flags
+  static constexpr uint8_t FLAG_ENABLED = 0;
+  static constexpr uint8_t FLAG_PHASE_CHANGED = 1;
+  static constexpr uint8_t FLAG_FINISHED = 2;
+  static constexpr uint8_t FLAG_REACHED_LIMIT = 3;
 
-    bool phase_changed;
-    bool finished;
-    bool reached_repetitions_limit;
+  Phase *phases;
+  int phase_count;
+  int phase_index;
+  unsigned long repetitions_limit;
+  unsigned long repetitions_count;
+  unsigned long last_time_ms;
+  uint8_t flags; // Bitfield for boolean flags
 
-   public:
-    Cycle();
+  // Disable copy constructor and assignment
+  Cycle(const Cycle &) = delete;
+  Cycle &operator=(const Cycle &) = delete;
 
-    /**
-     * Checks if the cycle is enabled.
-     * @return True if the cycle is enabled, false otherwise.
-     */
-    bool is_enabled();
+public:
+  Cycle();
+  ~Cycle();
 
-    /**
-     * Gets the current phase.
-     * @return Pointer to the current phase.
-     */
-    Phase* get_phase();
+  /**
+   * Checks if the cycle is enabled.
+   * @return True if the cycle is enabled, false otherwise.
+   */
+  bool is_enabled();
 
-    /**
-     * Gets the number of phases in the cycle.
-     * @return Number of phases.
-     */
-    int get_phase_count();
+  /**
+   * Gets the current phase.
+   * @return Pointer to the current phase.
+   */
+  Phase *get_phase();
 
-    /**
-     * Checks if the phase has changed since the last update.
-     * @return True if the phase has changed, false otherwise.
-     */
-    bool has_phase_changed();
+  /**
+   * Gets the number of phases in the cycle.
+   * @return Number of phases.
+   */
+  int get_phase_count();
 
-    /**
-     * Checks if the cycle has finished.
-     * @return True if the cycle has finished, false otherwise.
-     */
-    bool has_finished();
+  /**
+   * Checks if the phase has changed since the last update.
+   * @return True if the phase has changed, false otherwise.
+   */
+  bool has_phase_changed();
 
-    /**
-     * Checks if the cycle has reached its repetitions limit.
-     * @return True if the repetitions limit is reached, false otherwise.
-     */
-    bool has_reached_repetitions_limit();
+  /**
+   * Checks if the cycle has finished.
+   * @return True if the cycle has finished, false otherwise.
+   */
+  bool has_finished();
 
-    /**
-     * Sets the limit for cycle repetitions.
-     * @param repetitions_limit The number of repetitions allowed.
-     */
-    void set_repetitions_limit(unsigned long repetitions_limit);
+  /**
+   * Checks if the cycle has reached its repetitions limit.
+   * @return True if the repetitions limit is reached, false otherwise.
+   */
+  bool has_reached_repetitions_limit();
 
-    /**
-     * Sets the phases for the cycle.
-     * @param phases Array of phases.
-     * @param phase_count Number of phases in the array.
-     */
-    void set_phases(Phase phases[], int phase_count);
+  /**
+   * Sets the limit for cycle repetitions.
+   * @param repetitions_limit The number of repetitions allowed.
+   */
+  void set_repetitions_limit(unsigned long repetitions_limit);
 
-    /**
-     * Enables the cycle.
-     * Repeats the cycle based on the repetitions limit.
-     * Resets the repetitions count.
-     */
-    void enable();
+  /**
+   * Sets the phases for the cycle.
+   * @param phases Array of phases.
+   * @param phase_count Number of phases in the array.
+   */
+  void set_phases(Phase phases[], int phase_count);
 
-    /**
-     * Disables the cycle.
-     */
-    void disable();
+  /**
+   * Enables the cycle.
+   * Repeats the cycle based on the repetitions limit.
+   * Resets the repetitions count.
+   */
+  void enable();
 
-    /**
-     * Updates the cycle's state.
-     */
-    void update();
+  /**
+   * Disables the cycle.
+   */
+  void disable();
+
+  /**
+   * Updates the cycle's state.
+   */
+  void update();
 };
 
 #endif

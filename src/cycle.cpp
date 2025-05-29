@@ -1,107 +1,115 @@
 #include "cycle.h"
-
 #include <Arduino.h>
 
 Cycle::Cycle()
-    : enabled(false),
-      phases(nullptr),
-      phase_count(0),
-      phase_index(0),
-      repetitions_limit(0),
-      repetitions_count(0),
-      last_time_ms(0) {}
+    : phases(nullptr), phase_count(0), phase_index(0), repetitions_limit(0),
+      repetitions_count(0), last_time_ms(0), flags(0) {}
 
-bool Cycle::is_enabled() {
-    return enabled;
+Cycle::~Cycle() { delete[] phases; }
+
+bool Cycle::is_enabled() { return flags & (1 << FLAG_ENABLED); }
+
+Phase *Cycle::get_phase() {
+  if (!is_enabled() || phase_index >= phase_count)
+    return nullptr;
+  return &phases[phase_index];
 }
 
-Phase* Cycle::get_phase() {
-    if (!enabled || phase_index >= phase_count) return nullptr;
-    return &phases[phase_index];
-}
-
-int Cycle::get_phase_count() {
-    return phase_count;
-}
+int Cycle::get_phase_count() { return phase_count; }
 
 bool Cycle::has_phase_changed() {
-    bool result = phase_changed;
-    phase_changed = false;
-    return result;
+  bool result = flags & (1 << FLAG_PHASE_CHANGED);
+  flags &= ~(1 << FLAG_PHASE_CHANGED);
+  return result;
 }
 
 bool Cycle::has_finished() {
-    bool result = finished;
-    finished = false;
-    return result;
+  bool result = flags & (1 << FLAG_FINISHED);
+  flags &= ~(1 << FLAG_FINISHED);
+  return result;
 }
 
 bool Cycle::has_reached_repetitions_limit() {
-    bool result = reached_repetitions_limit;
-    reached_repetitions_limit = false;
-    return result;
+  bool result = flags & (1 << FLAG_REACHED_LIMIT);
+  flags &= ~(1 << FLAG_REACHED_LIMIT);
+  return result;
 }
 
 void Cycle::set_repetitions_limit(unsigned long repetitions_limit) {
-    this->repetitions_limit = repetitions_limit;
+  this->repetitions_limit = repetitions_limit;
 }
 
 void Cycle::set_phases(Phase phases[], int phase_count) {
+  if (phase_count <= 0 || phases == nullptr) {
+    // Disable the cycle if invalid input
+    this->phase_count = 0;
     delete[] this->phases;
-    this->phases = new Phase[phase_count];
-    for (int i = 0; i < phase_count; i++) {
-        this->phases[i] = phases[i];
-    }
+    this->phases = nullptr;
+    return;
+  }
 
-    this->phase_count = phase_count;
-    phase_index = 0;
+  // Delete old phases
+  delete[] this->phases;
+
+  // Allocate and copy new phases
+  this->phases = new Phase[phase_count];
+  for (int i = 0; i < phase_count; i++) {
+    this->phases[i] = phases[i];
+  }
+
+  this->phase_count = phase_count;
+  phase_index = 0;
+
+  // Reset timing
+  if (is_enabled()) {
+    last_time_ms = millis();
+  }
 }
 
 void Cycle::enable() {
-    enabled = true;
-    phase_changed = false;
-    finished = false;
-    reached_repetitions_limit = false;
-    repetitions_count = 0;
-    phase_index = 0;
-    last_time_ms = millis();
+  flags = (1 << FLAG_ENABLED); // Set enabled, clear all other flags
+  repetitions_count = 0;
+  phase_index = 0;
+  last_time_ms = millis();
 }
 
 void Cycle::disable() {
-    enabled = false;
-    phase_index = 0;
+  flags &= ~(1 << FLAG_ENABLED);
+  phase_index = 0;
 }
 
 void Cycle::update() {
-    phase_changed = false;
-    finished = false;
-    reached_repetitions_limit = false;
+  // Clear one-time flags
+  flags &= ~((1 << FLAG_PHASE_CHANGED) | (1 << FLAG_FINISHED) |
+             (1 << FLAG_REACHED_LIMIT));
 
-    if (!enabled || phases == nullptr || phase_count == 0) return;
+  if (!is_enabled() || phases == nullptr || phase_count == 0) {
+    return;
+  }
 
-    unsigned long now = millis();
-    unsigned long elapsed = now - last_time_ms;
+  unsigned long now = millis();
+  unsigned long elapsed = (now - last_time_ms);
 
-    // current phase
-    if (elapsed < phases[phase_index].duration_ms) {
-        return;
-    }
+  // Check if current phase duration has elapsed
+  if (elapsed < phases[phase_index].duration_ms) {
+    return;
+  }
 
-    // next phase
-    phase_changed = true;
-    phase_index++;
-    last_time_ms = now;
+  // Phase change logic
+  flags |= (1 << FLAG_PHASE_CHANGED);
+  phase_index++;
+  last_time_ms = now;
 
-    // finished cycle
-    if (phase_index >= phase_count) {
-        finished = true;
-        phase_index = 0;
-        repetitions_count++;
-    }
+  // Check if cycle finished
+  if (phase_index >= phase_count) {
+    flags |= (1 << FLAG_FINISHED);
+    phase_index = 0;
+    repetitions_count++;
 
-    // reached repetitions limit
+    // Check repetitions limit
     if (repetitions_limit > 0 && repetitions_count >= repetitions_limit) {
-        reached_repetitions_limit = true;
-        disable();
+      flags |= (1 << FLAG_REACHED_LIMIT);
+      disable();
     }
+  }
 }

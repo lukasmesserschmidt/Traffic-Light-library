@@ -1,66 +1,61 @@
 #include "activity_cycle.h"
-
 #include <Arduino.h>
+#include <stdint.h>
 
 ActivityCycle::ActivityCycle()
-    : enabled(false),
-      state(ActivityCycleState::ACTIVE),
-      state_changed(false),
-      active_time_ms(0),
-      inactive_time_ms(0),
-      last_time_ms(0) {}
-
-bool ActivityCycle::is_enabled() {
-    return enabled;
+    : state(ActivityCycleState::ACTIVE), active_time_ms(0), inactive_time_ms(0),
+      last_time_ms(0) {
+  // Initialize flags (all flags cleared by default)
+  flags = 0;
 }
+
+bool ActivityCycle::is_enabled() { return (flags & (1 << FLAG_ENABLED)) != 0; }
 
 bool ActivityCycle::has_state_changed() {
-    bool result = state_changed;
-    state_changed = false;
-    return result;
+  bool result = (flags & (1 << FLAG_STATE_CHANGED)) != 0;
+  flags &= ~(1 << FLAG_STATE_CHANGED);
+  return result;
 }
 
-ActivityCycleState ActivityCycle::get_state() {
-    return state;
-}
+ActivityCycleState ActivityCycle::get_state() { return state; }
 
-void ActivityCycle::set_times(unsigned long active_time_ms, unsigned long inactive_time_ms) {
-    this->active_time_ms = active_time_ms;
-    this->inactive_time_ms = inactive_time_ms;
+void ActivityCycle::set_times(unsigned long active_time_ms,
+                              unsigned long inactive_time_ms) {
+  this->active_time_ms = active_time_ms;
+  this->inactive_time_ms = inactive_time_ms;
 }
 
 void ActivityCycle::enable() {
-    enabled = true;
-    state_changed = false;
-    state = ActivityCycleState::ACTIVE;
-    last_time_ms = millis();
+  flags = (1 << FLAG_ENABLED); // Set enabled, clear other flags
+  state = ActivityCycleState::ACTIVE;
+  last_time_ms = millis();
 }
 
 void ActivityCycle::disable() {
-    enabled = false;
-    state = ActivityCycleState::ACTIVE;
+  flags &= ~(1 << FLAG_ENABLED);
+  state = ActivityCycleState::ACTIVE; // Reset to default state
 }
 
 void ActivityCycle::update() {
-    state_changed = false;
+  // Clear state changed flag
+  flags &= ~(1 << FLAG_STATE_CHANGED);
 
-    if (!enabled) return;
+  if (!is_enabled())
+    return;
 
-    unsigned long now = millis();
-    unsigned long elapsed = now - last_time_ms;
+  unsigned long now = millis();
+  unsigned long elapsed = now - last_time_ms;
+  unsigned long target_duration =
+      (state == ActivityCycleState::ACTIVE) ? active_time_ms : inactive_time_ms;
 
-    ActivityCycleState previous_state = state;
+  // Check if current state duration has elapsed
+  if (elapsed < target_duration) {
+    return;
+  }
 
-    // update state
-    if (state == ActivityCycleState::INACTIVE && elapsed >= inactive_time_ms) {
-        state = ActivityCycleState::ACTIVE;
-    } else if (state == ActivityCycleState::ACTIVE && elapsed >= active_time_ms) {
-        state = ActivityCycleState::INACTIVE;
-    }
-
-    // state has changed
-    if (previous_state != state) {
-        state_changed = true;
-        last_time_ms = now;
-    }
+  // Toggle state
+  state = (state == ActivityCycleState::ACTIVE) ? ActivityCycleState::INACTIVE
+                                                : ActivityCycleState::ACTIVE;
+  flags |= (1 << FLAG_STATE_CHANGED);
+  last_time_ms = now;
 }
